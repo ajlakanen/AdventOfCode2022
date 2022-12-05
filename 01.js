@@ -32,7 +32,7 @@ const caloriesSums = elfCalories.map((calories) =>
   }, 0)
 );
 
-// 4. print max and sum of max three
+// 4. print max (part 1) and sum of max three (part 2)
 
 console.log(Math.max(...caloriesSums));
 
