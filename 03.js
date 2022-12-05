@@ -18,32 +18,49 @@ let rucksacks = [];
 
 // read the data
 // result: [[ 'LLBPGtltrGPBMMsLcLMMVMp', 'RhhfCDTwRwRdTfwDllRRRDhC' ], ... ]
-const data = f.readFileSync("03-data-mini.txt", "utf-8");
+const data = f.readFileSync("03-data.txt", "utf-8");
 data.split(/\r?\n/).forEach((line) => {
-  rucksacks.push([
-    line.slice(0, line.length / 2),
-    line.slice(line.length / 2, line.length),
-  ]);
+  rucksacks.push(line);
 });
 
-console.log(rucksacks);
+// console.log(rucksacks);
 
 const commonChars = rucksacks
   .map((r) => {
-    return _.intersection([...r[0]], [...r[1]]);
+    return _.intersection(
+      [...r.slice(0, r.length / 2)],
+      [...r.slice(r.length / 2, r.length)]
+    );
   })
   .flat();
 
-console.log(util.inspect(commonChars, { maxArrayLength: null }));
+// console.log(commonChars)
 
 const charcodes = commonChars.map((e) => {
   return cc(e);
 });
 
-console.log(util.inspect(charcodes, { maxArrayLength: null }));
+// console.log(charcodes);
 
 const sum = charcodes.reduce((acc, curr) => {
   return acc + curr;
 }, 0);
 
 console.log(sum);
+
+const sumOfGroupsOfThree = rucksacks.reduce((acc, curr, index) => {
+  if (index % 3 === 0)
+    return (
+      acc +
+      cc(
+        _.intersection(
+          [...rucksacks[index]],
+          [...rucksacks[index + 1]],
+          [...rucksacks[index + 2]]
+        )[0]
+      )
+    );
+  else return acc;
+}, 0);
+
+console.log(sumOfGroupsOfThree);
