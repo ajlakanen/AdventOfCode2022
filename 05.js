@@ -33,7 +33,7 @@ const parseStartingStacks = (lines) => {
   return stacks;
 };
 
-function parseInstructions(lines, instructionsStartAt) {
+const parseInstructions = (lines, instructionsStartAt) => {
   let instructions = [];
   for (let i = instructionsStartAt; i < lines.length; i++) {
     const element = lines[i]
@@ -45,7 +45,7 @@ function parseInstructions(lines, instructionsStartAt) {
     instructions.push(element);
   }
   return instructions;
-}
+};
 
 function printStacksTops(stacks) {
   let tops = [];
