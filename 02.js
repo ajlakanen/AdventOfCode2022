@@ -3,8 +3,8 @@ const f = require("fs");
 // 1. read data to lines
 let turns = [];
 
-const data = f.readFileSync("02-data.txt", "utf-8");
-data.split(/\r?\n/).forEach((line) => {
+const dataRaw = f.readFileSync("02-data.txt", "utf-8");
+dataRaw.split(/\r?\n/).forEach((line) => {
   turns.push(line.replace(" ", ""));
 });
 

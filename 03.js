@@ -1,5 +1,4 @@
 const f = require("fs");
-const { zip } = require("lodash");
 const _ = require("lodash");
 const util = require("util");
 
@@ -18,8 +17,8 @@ let rucksacks = [];
 
 // read the data
 // result: [[ 'LLBPGtltrGPBMMsLcLMMVMp', 'RhhfCDTwRwRdTfwDllRRRDhC' ], ... ]
-const data = f.readFileSync("03-data.txt", "utf-8");
-data.split(/\r?\n/).forEach((line) => {
+const dataRaw = f.readFileSync("03-data.txt", "utf-8");
+dataRaw.split(/\r?\n/).forEach((line) => {
   rucksacks.push(line);
 });
 
