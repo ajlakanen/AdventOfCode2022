@@ -16,9 +16,9 @@ const findStackIndices = (lines) => {
 
 const indicesLine = findStackIndices(lines);
 
-const parseStartStacks = (lines) => {
+const parseStartingStacks = (lines) => {
+  // TODO: This is stupid. If >=10 stacks exist, this will break.
   const numberOfStacks = lines[indicesLine].replace(/\s/g, "").length;
-
   let stacks = Array(numberOfStacks)
     .fill()
     .map((a) => []);
@@ -33,17 +33,34 @@ const parseStartStacks = (lines) => {
   return stacks;
 };
 
-let stacks = parseStartStacks(lines);
-let instructions = [];
-for (let i = indicesLine + 2; i < lines.length; i++) {
-  const element = lines[i]
-    .replace("move", "")
-    .replace("from", "")
-    .replace("to", "")
-    .replace(" ", "")
-    .split("  ");
-  instructions.push(element);
+function parseInstructions(lines, instructionsStartAt) {
+  let instructions = [];
+  for (let i = instructionsStartAt; i < lines.length; i++) {
+    const element = lines[i]
+      .replace("move", "")
+      .replace("from", "")
+      .replace("to", "")
+      .replace(" ", "")
+      .split("  ");
+    instructions.push(element);
+  }
+  return instructions;
 }
+
+function printStacksTops(stacks) {
+  let tops = [];
+  stacks.forEach((stack) => {
+    tops.push(stack.pop());
+  });
+
+  console.log(tops.join(""));
+  return tops;
+}
+
+let stacks = parseStartingStacks(lines);
+let instructions = parseInstructions(lines, indicesLine + 2);
+
+// Part 1 starts here
 
 for (let i = 0; i < instructions.length; i++) {
   const howMany = instructions[i][0];
@@ -55,9 +72,19 @@ for (let i = 0; i < instructions.length; i++) {
   }
 }
 
-let tops = [];
-stacks.forEach((stack) => {
-  tops.push(stack.pop());
-});
+printStacksTops(stacks);
 
-console.log(tops.join(""));
+// Part 2 starts here
+
+stacks = parseStartingStacks(lines);
+
+for (let i = 0; i < instructions.length; i++) {
+  const howMany = instructions[i][0];
+  const from = instructions[i][1] - 1;
+  const elementsToMove = stacks[from].slice(stacks[from].length - howMany);
+  const to = instructions[i][2] - 1;
+  stacks[to] = stacks[to].concat(elementsToMove);
+  stacks[from] = stacks[from].slice(0, stacks[from].length - howMany);
+}
+
+printStacksTops(stacks);
