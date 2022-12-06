@@ -8,8 +8,6 @@ dataRaw.split(/\r?\n/).forEach((line) => {
   data = line;
 });
 
-// console.log(data);
-
 const findMarker = (data) => {
   for (let i = 3; i < data.length; i++) {
     const str = data.slice(i - 3, i + 1);
