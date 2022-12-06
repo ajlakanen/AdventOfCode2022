@@ -8,8 +8,6 @@ dataRaw.split(/\r?\n/).forEach((line) => {
   lines.push(line);
 });
 
-//console.log(lines);
-
 const findStackIndices = (lines) => {
   for (let i = 0; i < lines.length; i++) {
     if (lines[i] === "") return i - 1;
@@ -46,9 +44,6 @@ for (let i = indicesLine + 2; i < lines.length; i++) {
     .split("  ");
   instructions.push(element);
 }
-
-// console.log(instructions);
-// console.log(stacks);
 
 for (let i = 0; i < instructions.length; i++) {
   const howMany = instructions[i][0];
