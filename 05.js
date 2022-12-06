@@ -47,7 +47,7 @@ const parseInstructions = (lines, instructionsStartAt) => {
   return instructions;
 };
 
-function printStacksTops(stacks) {
+const printStacksTops = (stacks) => {
   let tops = [];
   stacks.forEach((stack) => {
     tops.push(stack.pop());
@@ -55,7 +55,7 @@ function printStacksTops(stacks) {
 
   console.log(tops.join(""));
   return tops;
-}
+};
 
 let stacks = parseStartingStacks(lines);
 let instructions = parseInstructions(lines, indicesLine + 2);
