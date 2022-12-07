@@ -88,7 +88,7 @@ for (let i = 0; i < fileSystem.size; i++) {
   //}, 0);
 
   const recursiveSum = [...fileSystem]
-    .filter((k, v) => `${k}`.startsWith(i.value[0]))
+    .filter((k, v) => `${k}`.startsWith(dir))
     .map((a) => a[1])
     .flat()
     .map((o) => parseInt(o.size))
