@@ -4,7 +4,7 @@ const f = require("fs");
 let lines = [];
 
 // read the data
-const dataRaw = f.readFileSync("07-data-mini.txt", "utf-8");
+const dataRaw = f.readFileSync("07-data.txt", "utf-8");
 dataRaw.split(/\r?\n/).forEach((line) => {
   lines.push(line);
 });
@@ -27,15 +27,14 @@ const addFileToStructure = (dir, file) => {
   fileSystem.set(dir, files);
 };
 
-function cd(target) {
-  if (target === "..") {
+function cd(to) {
+  if (to === "..") {
     currentDir = currentDir.slice(0, currentDir.lastIndexOf("/"));
     if (currentDir === "") currentDir = "/";
-  } else if (target === "/") {
+  } else if (to === "/") {
     currentDir = "/";
   } else {
-    const dir = target;
-    currentDir = currentDir === "/" ? `/${dir}` : `${currentDir}/${dir}`;
+    currentDir = currentDir === "/" ? `/${to}` : `${currentDir}/${to}`;
   }
 }
 
@@ -61,6 +60,8 @@ const execute = (commands) => {
     if (commands[i][1] === "cd") {
       cd(commands[i][2]);
     }
+    // Here we actually assume that ls command is given in every dir.
+    // The ls command is the only one adding dirs to structure.
     if (commands[i][1] === "ls") {
       const list = ls(i + 1);
     }
@@ -68,33 +69,35 @@ const execute = (commands) => {
   }
 };
 
-// console.log(lines);
-
 const commands = lines.map((line) => line.split(" "));
-// console.log(commands);
 let currentDir = "/";
 let fileSystem = new Map();
 fileSystem.set("/", []);
 
 execute(commands);
-//console.log("fileSystem", fileSystem);
-
-// fileSystem.forEach((value, key) => {
-//   console.log(key);
-//   console.log(fileSystem.get(key).value);
-// });
 
 const iter = fileSystem.entries();
 
+let under100kSum = 0;
 for (let i = 0; i < fileSystem.size; i++) {
   const i = iter.next();
-  console.log(i.value[0], i.value[1]);
-  const sum = [...i.value[1]].reduce((acc, curr) => {
-    acc + curr.size;
-  }, 0);
-  console.log(
-    [...i.value[1]]
-      .map((x) => x.size)
-      .reduce((acc, curr) => parseInt(acc) + parseInt(curr), 0)
-  );
+  const dir = i.value[0];
+
+  //const sum = [...i.value[1]].reduce((acc, curr) => {
+  //  acc + curr.size;
+  //}, 0);
+
+  const recursiveSum = [...fileSystem]
+    .filter((k, v) => `${k}`.startsWith(i.value[0]))
+    .map((a) => a[1])
+    .flat()
+    .map((o) => parseInt(o.size))
+    .reduce((acc, curr) => acc + curr, 0);
+
+  if (recursiveSum < 100000) {
+    console.log(`${dir}: ${recursiveSum}`);
+    under100kSum += recursiveSum;
+  }
 }
+
+console.log(under100kSum);
