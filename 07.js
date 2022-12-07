@@ -22,11 +22,9 @@ const addDirToStructure = (dir) => {
 };
 
 const addFileToStructure = (dir, file) => {
-  //console.log("dir", dir);
-  const value = fileSystem.get(dir);
-  //console.log(value);
-  value.push(file);
-  fileSystem.set(dir, value);
+  const files = fileSystem.get(dir);
+  files.push(file);
+  fileSystem.set(dir, files);
 };
 
 function cd(target) {
@@ -37,18 +35,13 @@ function cd(target) {
     currentDir = "/";
   } else {
     const dir = target;
-    //addDirToStructure(currentDir === "/" ? `/${dir}` : `${currentDir}/${dir}`);
     currentDir = currentDir === "/" ? `/${dir}` : `${currentDir}/${dir}`;
-    //console.log("fileSystem", fileSystem);
   }
 }
 
 const ls = (lsStartsAt) => {
   const lsEndsAt = lsEnds(lsStartsAt);
   const filesAndDirs = commands.slice(lsStartsAt, lsEndsAt);
-  //console.log("dir", currentDir);
-  //console.log("lsStarts", lsStartsAt, "lsEnds", lsEndsAt);
-  //console.log(filesAndDirs);
   for (let i = 0; i < filesAndDirs.length; i++) {
     if (filesAndDirs[i][0] === "dir") {
       const dir = filesAndDirs[i][1];
@@ -56,16 +49,10 @@ const ls = (lsStartsAt) => {
         currentDir === "/" ? `/${dir}` : `${currentDir}/${dir}`
       );
     } else {
-      //console.log(filesAndDirs[i][0], filesAndDirs[i][1]);
       const file = { size: filesAndDirs[i][0], name: filesAndDirs[i][1] };
-      //console.log(file);
       addFileToStructure(currentDir, file);
-      //console.log(file);
     }
   }
-  // fileSystem.set(currentDir);
-  // console.log("start", lsStartsAt, "end", lsEndsAt);
-  // console.log("filesAndDirs", filesAndDirs);
 };
 
 const execute = (commands) => {
