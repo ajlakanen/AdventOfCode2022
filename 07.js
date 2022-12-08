@@ -38,8 +38,7 @@ function cd(to) {
   }
 }
 
-const ls = (lsStartsAt) => {
-  const lsEndsAt = lsEnds(lsStartsAt);
+const ls = (lsStartsAt, lsEndsAt) => {
   const filesAndDirs = commands.slice(lsStartsAt, lsEndsAt);
   for (let i = 0; i < filesAndDirs.length; i++) {
     if (filesAndDirs[i][0] === "dir") {
@@ -63,7 +62,7 @@ const execute = (commands) => {
     // Here we actually assume that ls command is given in every dir.
     // The ls command is the only one adding dirs to structure.
     if (commands[i][1] === "ls") {
-      const list = ls(i + 1);
+      const list = ls(i + 1, lsEnds(i + 1));
     }
     i++;
   }
@@ -88,10 +87,10 @@ for (let i = 0; i < fileSystem.size; i++) {
   //}, 0);
 
   const recursiveSum = [...fileSystem]
-    .filter((k, v) => `${k}`.startsWith(dir))
-    .map((a) => a[1])
+    .filter((kv) => `${kv}`.startsWith(dir))
+    .map((kv) => kv[1])
     .flat()
-    .map((o) => parseInt(o.size))
+    .map((files) => parseInt(files.size))
     .reduce((acc, curr) => acc + curr, 0);
 
   if (recursiveSum < 100000) {
