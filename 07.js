@@ -62,7 +62,7 @@ const execute = (commands) => {
     // Here we actually assume that ls command is given in every dir.
     // The ls command is the only one adding dirs to structure.
     if (commands[i][1] === "ls") {
-      const list = ls(i + 1, lsEnds(i + 1));
+      ls(i + 1, lsEnds(i + 1));
     }
     i++;
   }
