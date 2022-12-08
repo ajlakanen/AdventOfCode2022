@@ -1,4 +1,3 @@
-const { dir } = require("console");
 const f = require("fs");
 
 let lines = [];
