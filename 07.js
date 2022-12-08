@@ -108,8 +108,8 @@ iterator = fileSystem.entries();
 for (let i = 0; i < fileSystem.size; i++) {
   const next = iterator.next();
   const dirSize = [...next.value[1]]
-    .map((a) => a.size)
-    .reduce((acc, curr) => acc + parseInt(curr), 0);
+    .map((a) => parseInt(a.size))
+    .reduce((acc, curr) => acc + curr, 0);
   dirSizes.push(dirSize);
 }
 
