@@ -31,7 +31,7 @@ const sortNumbers = (a, b) => {
   return parseInt(a) - parseInt(b);
 };
 
-function cd(to) {
+const cd = (to) => {
   if (to === "..") {
     currentDir = currentDir.slice(0, currentDir.lastIndexOf("/"));
     if (currentDir === "") currentDir = "/";
@@ -40,7 +40,7 @@ function cd(to) {
   } else {
     currentDir = currentDir === "/" ? `/${to}` : `${currentDir}/${to}`;
   }
-}
+};
 
 const ls = (lsStartsAt, lsEndsAt) => {
   const filesAndDirs = commands.slice(lsStartsAt, lsEndsAt);
