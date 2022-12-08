@@ -32,13 +32,12 @@ const sortNumbers = (a, b) => {
 
 const cd = (to) => {
   if (to === "..") {
-    currentDir = currentDir.slice(0, currentDir.lastIndexOf("/"));
-    if (currentDir === "") currentDir = "/";
-  } else if (to === "/") {
-    currentDir = "/";
-  } else {
-    currentDir = currentDir === "/" ? `/${to}` : `${currentDir}/${to}`;
-  }
+    currentDir =
+      currentDir === ""
+        ? "/"
+        : currentDir.slice(0, currentDir.lastIndexOf("/"));
+  } else if (to === "/") currentDir = "/";
+  else currentDir = currentDir === "/" ? `/${to}` : `${currentDir}/${to}`;
 };
 
 const ls = (lsStartsAt, lsEndsAt) => {
