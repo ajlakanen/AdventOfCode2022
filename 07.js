@@ -27,6 +27,10 @@ const addFileToStructure = (dir, file) => {
   fileSystem.set(dir, files);
 };
 
+const sortNumbers = (a, b) => {
+  return parseInt(a) - parseInt(b);
+};
+
 function cd(to) {
   if (to === "..") {
     currentDir = currentDir.slice(0, currentDir.lastIndexOf("/"));
@@ -75,28 +79,43 @@ fileSystem.set("/", []);
 
 execute(commands);
 
-const iter = fileSystem.entries();
+// Part 1 starts here
 
+let iterator = fileSystem.entries();
 let under100kSum = 0;
+let dirSizesRecursive = [];
+
 for (let i = 0; i < fileSystem.size; i++) {
-  const i = iter.next();
+  const i = iterator.next();
   const dir = i.value[0];
 
-  //const sum = [...i.value[1]].reduce((acc, curr) => {
-  //  acc + curr.size;
-  //}, 0);
-
-  const recursiveSum = [...fileSystem]
+  const dirSizeRecursive = [...fileSystem]
     .filter((kv) => `${kv}`.startsWith(dir))
     .map((kv) => kv[1])
     .flat()
     .map((files) => parseInt(files.size))
     .reduce((acc, curr) => acc + curr, 0);
 
-  if (recursiveSum < 100000) {
-    console.log(`${dir}: ${recursiveSum}`);
-    under100kSum += recursiveSum;
-  }
+  dirSizesRecursive.push(dirSizeRecursive);
+  if (dirSizeRecursive < 100000) under100kSum += dirSizeRecursive;
 }
 
 console.log(under100kSum);
+
+// Part 2 starts here
+
+let dirSizes = [];
+iterator = fileSystem.entries();
+
+for (let i = 0; i < fileSystem.size; i++) {
+  const next = iterator.next();
+  const dirSize = [...next.value[1]]
+    .map((a) => a.size)
+    .reduce((acc, curr) => acc + parseInt(curr), 0);
+  dirSizes.push(dirSize);
+}
+
+const dirSize = dirSizes.reduce((acc, curr) => acc + curr, 0);
+console.log(
+  dirSizesRecursive.sort(sortNumbers).filter((s) => dirSize - s < 40000000)[0]
+);
