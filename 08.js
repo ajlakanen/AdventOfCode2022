@@ -28,27 +28,6 @@ const isVisible = (array, row, col) => {
     return true;
   }
   return false;
-  // const rows = Array(array.length)
-  //   .fill()
-  //   .map((_, i) => i)
-  //   .filter((i) => i !== row);
-
-  //  console.log(
-  //    row,
-  //    col,
-  //    array
-  //      .filter((r, i) => rows.includes(i))
-  //      .map((c, i) => c[col])
-  //      .reduce((acc, curr) => (curr >= array[row][col] ? false : acc), true)
-  //  );
-  //
-  //  //cols
-  //  const cols = Array(array.length)
-  //    .fill()
-  //    .map((_, i) => i)
-  //    .filter((i) => i !== col);
-  //  for (const c in cols) if (array[row][c] >= array[row][col]) return false;
-  // return true;
 };
 
 let visibles = 0;
