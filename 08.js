@@ -12,7 +12,6 @@ dataRaw.split(/\r?\n/).forEach((line) => {
 
 const isVisible = (array, row, col) => {
   const cols = array[0].length;
-  // console.log(cols);
   let left = (right = top = bottom = true);
   for (let ix = 0; ix < col; ix++)
     if (array[row][ix] >= array[row][col]) left = false;
@@ -24,9 +23,7 @@ const isVisible = (array, row, col) => {
     if (array[iy][col] >= array[row][col]) bottom = false;
 
   let visible = left || right || top || bottom;
-  if (visible) {
-    return true;
-  }
+  if (visible) return true;
   return false;
 };
 
