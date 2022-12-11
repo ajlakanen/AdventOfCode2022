@@ -3,8 +3,6 @@ const { cloneWith, tail } = require("lodash");
 
 let motions = [];
 
-class Move {}
-
 // read the data
 const dataRaw = f.readFileSync("09-data.txt", "utf-8");
 dataRaw.split(/\r?\n/).forEach((line) => {
