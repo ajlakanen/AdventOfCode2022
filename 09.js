@@ -69,7 +69,9 @@ const newTailPosition = (headPosition, tailPosition, direction) => {
   moves.set("1-1R", [1, -1]);
   moves.set("1-1D", [1, -1]);
   moves.set("1-1L", [0, 0]);
-
+  // We could actually do this and remove all the entries from the
+  // moves set with the value [0, 0].
+  // if (!moves.has(`${dx}${dy}${direction}`)) return tailPosition;
   const tailDirection = moves.get(`${dx}${dy}${direction}`);
   const newTailPosition = [
     tailPosition[0] + tailDirection[0],
