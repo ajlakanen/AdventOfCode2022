@@ -8,13 +8,7 @@ dataRaw.split(/\r?\n/).forEach((line) => {
   lines.push(line);
 });
 
-const findStackIndices = (lines) => {
-  for (let i = 0; i < lines.length; i++) {
-    if (lines[i] === "") return i - 1;
-  }
-};
-
-const indicesLine = findStackIndices(lines);
+const indicesLine = lines.findIndex((l) => l === "") - 1;
 
 const parseStartingStacks = (lines) => {
   // TODO: This is stupid. If >=10 stacks exist, this will break.
