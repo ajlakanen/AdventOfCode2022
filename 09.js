@@ -8,8 +8,8 @@ dataRaw.split(/\r?\n/).forEach((line) => {
   motions.push([line.split(" ")[0], parseInt(line.split(" ")[1])]);
 });
 
-let headPosition = [0, 0];
-let tailPosition = [0, 0];
+let head = [0, 0];
+let tail = [0, 0];
 let tailVisited = new Map();
 tailVisited.set("00", 1);
 
@@ -28,51 +28,38 @@ const newHeadPosition = (headPosition, direction) => {
   }
 };
 
-const newTailPosition = (headPosition, tailPosition, direction) => {
+const newTailPosition = (headPosition, tailPosition) => {
   const dx = headPosition[0] - tailPosition[0];
   const dy = headPosition[1] - tailPosition[1];
 
   const moves = new Map();
-  moves.set("-11U", [-1, 1]);
-  moves.set("-11R", [0, 0]);
-  moves.set("-11D", [0, 0]);
-  moves.set("-11L", [-1, 1]);
-  moves.set("01U", [0, 1]);
-  moves.set("01R", [0, 0]);
-  moves.set("01D", [0, 0]);
-  moves.set("01L", [0, 0]);
-  moves.set("11U", [1, 1]);
-  moves.set("11R", [1, 1]);
-  moves.set("11D", [0, 0]);
-  moves.set("11L", [0, 0]);
-  moves.set("-10U", [0, 0]);
-  moves.set("-10R", [0, 0]);
-  moves.set("-10D", [0, 0]);
-  moves.set("-10L", [-1, 0]);
-  moves.set("00U", [0, 0]);
-  moves.set("00R", [0, 0]);
-  moves.set("00D", [0, 0]);
-  moves.set("00L", [0, 0]);
-  moves.set("10U", [0, 0]);
-  moves.set("10R", [1, 0]);
-  moves.set("10D", [0, 0]);
-  moves.set("10L", [0, 0]);
-  moves.set("-1-1U", [0, 0]);
-  moves.set("-1-1R", [0, 0]);
-  moves.set("-1-1D", [-1, -1]);
-  moves.set("-1-1L", [-1, -1]);
-  moves.set("0-1U", [0, 0]);
-  moves.set("0-1R", [0, 0]);
-  moves.set("0-1D", [0, -1]);
-  moves.set("0-1L", [0, 0]);
-  moves.set("1-1U", [0, 0]);
-  moves.set("1-1R", [1, -1]);
-  moves.set("1-1D", [1, -1]);
-  moves.set("1-1L", [0, 0]);
-  // We could actually do this and remove all the entries from the
-  // moves set with the value [0, 0].
-  // if (!moves.has(`${dx}${dy}${direction}`)) return tailPosition;
-  const tailDirection = moves.get(`${dx}${dy}${direction}`);
+  // 2 rows above
+  moves.set("-22", [-1, 1]); // why is this possible??
+  moves.set("-12", [-1, 1]);
+  moves.set("02", [0, 1]);
+  moves.set("12", [1, 1]);
+  moves.set("22", [1, 1]); // why is this possible??
+  // 1 row above
+  moves.set("-21", [-1, 1]);
+  moves.set("21", [1, 1]);
+
+  // same row
+  moves.set("-20", [-1, 0]);
+  moves.set("20", [1, 0]);
+
+  // 1 row below
+  moves.set("-2-1", [-1, -1]);
+  moves.set("2-1", [1, -1]);
+
+  // 2 rows below
+  moves.set("-2-2", [-1, -1]); // why is this possible??
+  moves.set("-1-2", [-1, -1]);
+  moves.set("0-2", [0, -1]);
+  moves.set("1-2", [1, -1]);
+  moves.set("2-2", [1, -1]); // why is this possible??
+
+  if (!moves.has(`${dx}${dy}`)) return tailPosition;
+  const tailDirection = moves.get(`${dx}${dy}`);
   const newTailPosition = [
     tailPosition[0] + tailDirection[0],
     tailPosition[1] + tailDirection[1],
@@ -83,13 +70,36 @@ const newTailPosition = (headPosition, tailPosition, direction) => {
 for (let i = 0; i < motions.length; i++) {
   const [direction, amount] = motions[i];
   for (let j = 0; j < amount; j++) {
-    tailPosition = newTailPosition(headPosition, tailPosition, direction);
-    tailPosAsStr = `${tailPosition[0]}${tailPosition[1]}`;
+    tail = newTailPosition(head, tail);
+    tailPosAsStr = `${tail[0]}${tail[1]}`;
     if (tailVisited.has(tailPosAsStr)) {
       tailVisited.set(tailPosAsStr, tailVisited.get(tailPosAsStr) + 1);
     } else tailVisited.set(tailPosAsStr, 1);
-    headPosition = newHeadPosition(headPosition, direction);
+    head = newHeadPosition(head, direction);
   }
 }
 
+console.log(tailVisited.size);
+
+let tails = Array(9)
+  .fill()
+  .map((a) => [0, 0]);
+head = [0, 0];
+tailVisited = new Map();
+tailVisited.set("00", 1);
+for (let i = 0; i < motions.length; i++) {
+  const [direction, amount] = motions[i];
+  for (let j = 0; j < amount; j++) {
+    head = newHeadPosition(head, direction);
+    for (let k = 0; k < tails.length; k++) {
+      const tail = tails[k];
+      const headNow = k === 0 ? head : tails[k - 1];
+      tails[k] = newTailPosition(headNow, tail);
+    }
+    tailPosAsStr = `${tails[tails.length - 1][0]}${tails[tails.length - 1][1]}`;
+    if (tailVisited.has(tailPosAsStr)) {
+      tailVisited.set(tailPosAsStr, tailVisited.get(tailPosAsStr) + 1);
+    } else tailVisited.set(tailPosAsStr, 1);
+  }
+}
 console.log(tailVisited.size);
