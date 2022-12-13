@@ -32,6 +32,8 @@ const newTailPosition = (headPosition, tailPosition) => {
   const dx = headPosition[0] - tailPosition[0];
   const dy = headPosition[1] - tailPosition[1];
 
+  // This is not very pretty :-(. It works, however...
+
   const moves = new Map();
   // 2 rows above
   moves.set("-22", [-1, 1]); // why is this possible??
