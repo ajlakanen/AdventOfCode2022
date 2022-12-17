@@ -8,6 +8,9 @@ dataRaw.split(/\r?\n/).forEach((line) => {
   lines.push(line);
 });
 
+const WIDTH = 40;
+const HEIGHT = 6;
+
 let cycles = [];
 let x = 1;
 
@@ -28,4 +31,15 @@ console.log(
       []
     )
     .reduce((acc, curr) => acc + curr, 0)
+);
+
+const rows = Array.from({ length: WIDTH / HEIGHT + 1 }, (_, i) => i * 40);
+console.log(
+  rows.map((r) =>
+    cycles
+      .slice(r, r + WIDTH)
+      .map((c, i) => (c >= i - 1 && c <= i + 1 ? "X" : " "))
+      .flat()
+      .join("")
+  )
 );
