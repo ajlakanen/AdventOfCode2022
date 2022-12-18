@@ -3,7 +3,7 @@ const f = require("fs");
 let lines = [];
 
 // read the data
-const dataRaw = f.readFileSync("11-data.txt", "utf-8");
+const dataRaw = f.readFileSync("11-data-mini.txt", "utf-8");
 dataRaw.split(/\r?\n/).forEach((line) => {
   lines.push(line);
 });
@@ -39,10 +39,12 @@ const parseMonkey = (lines) => {
   };
 };
 
-const round = (monkeys) => {
+const round = (monkeys, divide = true) => {
   for (let i = 0; i < monkeys.length; i++) {
     const monkey = monkeys[i];
-    const itemsAndOwners = turn(monkey);
+    //console.log(monkey.items);
+    //console.log(monkey.inspections);
+    const itemsAndOwners = turn(monkey, divide);
     monkey.items = [];
     itemsAndOwners.forEach(({ worryLevel, newOwner }) => {
       monkeys[newOwner].items.push(worryLevel);
@@ -50,7 +52,7 @@ const round = (monkeys) => {
   }
 };
 
-const turn = (monkey) => {
+const turn = (monkey, divide = true) => {
   let itemsAndOwners = [];
   for (const item in monkey.items) {
     monkey.inspections++;
@@ -58,16 +60,17 @@ const turn = (monkey) => {
       monkey.items[item],
       monkey.operation,
       monkey.test,
-      monkey.throwTo
+      monkey.throwTo,
+      divide
     );
     itemsAndOwners.push({ worryLevel, newOwner });
   }
   return itemsAndOwners;
 };
 
-const handleItem = (item, operation, test, throwTo) => {
+const handleItem = (item, operation, test, throwTo, divide = true) => {
   const worryLevel = newWorryLevel(item, operation.operand, operation.operator);
-  const newLevel = Math.floor(worryLevel / 3);
+  const newLevel = divide ? Math.floor(worryLevel / 3) : worryLevel; // % test;
   const newOwner = newLevel % test === 0 ? throwTo[0] : throwTo[1];
   return { worryLevel: newLevel, newOwner: newOwner };
 };
@@ -77,9 +80,25 @@ const monkeyStartsAt = Array.from(
   (_, i) => i * MONKEY_LINES
 );
 
-const monkeys = monkeyStartsAt.map((l) => parseMonkey(lines.slice(l, l + 6)));
+let monkeys = monkeyStartsAt.map((l) => parseMonkey(lines.slice(l, l + 6)));
 
-for (let i = 0; i < 20; i++) round(monkeys);
+for (let i = 0; i < 20; i++) round(monkeys, true);
+
+console.log(
+  monkeys
+    .map((m) => m.inspections)
+    .sort(sortDec)
+    .slice(0, 2)
+    .reduce((acc, curr) => acc * curr, 1)
+);
+
+monkeys = monkeyStartsAt.map((l) => parseMonkey(lines.slice(l, l + 6)));
+
+for (let i = 0; i < 1000; i++) round(monkeys, false);
+
+console.log(monkeys.map((m) => m.inspections).sort(sortDec));
+
+//console.log(monkeys);
 
 console.log(
   monkeys
