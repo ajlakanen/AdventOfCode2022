@@ -39,13 +39,15 @@ const TARGET_POS = [Math.floor(TARGET_IDX / WIDTH), TARGET_IDX % WIDTH];
 
 // console.log(START_POS, TARGET_POS);
 
+const generateEmptyArray = (width, height, content = 0) => {
+  let array = Array(height)
+    .fill()
+    .map((a) => [...Array(width)])
+    .map((a) => a.fill(content));
+  return array;
+};
+
 const generateNodes = (width, height, startPos) => {
-  //let nodes = Array(height)
-  //  .fill()
-  //  .map((a) => [...Array(width)])
-  //  .map((a) => a.fill(0));
-  //nodes[startPos[0]][startPos[1]] = 1;
-  //return nodes;
   let nodes = [];
   for (let iy = 0; iy < HEIGHT; iy++) {
     let row = [];
@@ -88,15 +90,19 @@ let pos = START_POS;
 
 let nodes = generateNodes(WIDTH, HEIGHT, START_POS);
 let open = [];
-let closed = [];
+let closed = generateEmptyArray(WIDTH, HEIGHT, 0);
+console.log(closed);
 nodes[START_POS[0]][START_POS[1]].update_h(100);
 nodes[START_POS[0]][START_POS[1]].update_g(0);
 open.push(START_POS);
 console.log(nodes[START_POS[0]][START_POS[1]]);
 
 nodes[1][0].update_h(50);
-open.push([1, 0]);
-console.log(nodes[1][0], open);
+//open.push([1, 0]);
+//open.push([2, 0]);
+//console.log(nodes[1][0]);
+//console.log(nodes[2][0]);
+//console.log(open);
 
 let i = 0;
 while (i < 1) {
@@ -108,7 +114,32 @@ while (i < 1) {
       current = pos;
   });
   console.log("current", current);
+
+  // remove current from open
   open = open.filter((p) => !(p[0] === current[0] && p[1] === current[1]));
   console.log("open", open);
+
+  // add current to closed
+  closed[current[0]][current[1]] = 1;
+
+  // if current is the target node, path has been found
+  if (current[0] === TARGET_POS[0] && current[1] === TARGET_POS) return;
+
+  let neighbours = [];
+  // up
+  if (current[0] - 1 >= 0 && closed[current[0]][current[1]] === 0)
+    neighbours.push(current);
+  // right
+  if (current[1] + 1 < WIDTH && closed[current[0]][current[1] + 1] === 0)
+    neighbours.push([current[0], current[1] + 1]);
+  // down
+  if (current[0] + 1 < HEIGHT && closed[current[0] + 1][current[1]] === 0)
+    neighbours.push([current[0] + 1, current[1]]);
+  // left
+  if (current[1] - 1 >= 0 && closed[current[0]][current[1] - 1] === 0)
+    neighbours.push(current);
+
+  console.log("closed", closed);
+  console.log("neighbours", neighbours);
   i++;
 }
