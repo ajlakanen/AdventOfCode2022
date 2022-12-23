@@ -1,8 +1,8 @@
 const f = require("fs");
 
 class Node {
-  constructor(g, h, parent) {
-    this.g = g;
+  constructor(row, col, g, h, parent) {
+    (this.row = row), (this.col = col), (this.g = g);
     this.h = h;
     this.f = g + h;
     this.parent = parent;
@@ -27,14 +27,13 @@ dataRaw.split(/\r?\n/).forEach((line) => {
   data.push(line.split("").map((c) => c.charCodeAt(0) - 97));
 });
 
-//console.log(lines);
-
 const WIDTH = data[0].length;
 const HEIGHT = data.length;
 const DATA_PLAIN = dataRaw.split(/\r?\n/).join("");
 const START_IDX = DATA_PLAIN.indexOf("S");
 const TARGET_IDX = DATA_PLAIN.indexOf("E");
 const START_POS = [START_IDX / WIDTH, START_IDX % WIDTH];
+data[START_POS[0]][START_POS[1]] = 0;
 const TARGET_POS = [Math.floor(TARGET_IDX / WIDTH), TARGET_IDX % WIDTH];
 
 // console.log(START_POS, TARGET_POS);
@@ -52,7 +51,12 @@ const generateNodes = (width, height, startPos) => {
   for (let iy = 0; iy < HEIGHT; iy++) {
     let row = [];
     for (let ix = 0; ix < WIDTH; ix++) {
-      const node = new Node(Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER);
+      const node = new Node(
+        iy,
+        ix,
+        Number.MAX_SAFE_INTEGER,
+        Number.MAX_SAFE_INTEGER
+      );
       row.push(node);
     }
     nodes.push(row);
@@ -73,15 +77,6 @@ const manhattanDist = (pos, target) => {
 let visited = generateNodes(WIDTH, HEIGHT, START_POS);
 let pos = START_POS;
 
-//while (!(pos[0] === TARGET_POS[0] && pos[1]) === TARGET_POS[1]) {
-//  let direction = [0, 0];
-//  // right
-//
-//  // down
-//  // left
-//  // up
-//}
-
 //const n = new Node(10, 20);
 //console.log(n);
 //n.update_g(20);
@@ -93,67 +88,78 @@ let pos = START_POS;
 let nodes = generateNodes(WIDTH, HEIGHT, START_POS);
 let open = [];
 let closed = generateEmptyArray(WIDTH, HEIGHT, 0);
-// console.log(closed);
-//nodes[START_POS[0]][START_POS[1]].update_h(100);
-//nodes[START_POS[0]][START_POS[1]].update_g(0);
-//open.push(START_POS);
-//console.log(nodes[START_POS[0]][START_POS[1]]);
-
-//nodes[1][0].update_h(50);
-//open.push([1, 0]);
-//open.push([2, 0]);
-//console.log(nodes[1][0]);
-//console.log(nodes[2][0]);
-//console.log(open);
-
+open.push(START_POS);
 let i = 0;
 let currentPos = [0, 0];
-while (i < 1) {
-  //console.log("open", open);
-  const currentNode = nodes[currentPos[0]][currentPos[1]];
+while (true) {
+  console.log("open", open);
+  //const currentNode = nodes[currentPos[0]][currentPos[1]];
   // find node in open list with the lowest f_cost
-  open.forEach((pos) => {
-    if (nodes[pos[0]][pos[1]].f <= currentNode.f) currentPos = pos;
-  });
-  //console.log("current", currentPos);
+  // open.forEach((pos) => {
+  //   if (nodes[pos[0]][pos[1]].f <= currentNode.f) currentPos = pos;
+  // });
+  const currentPos = open.reduce(
+    (acc, curr) =>
+      nodes[curr[0]][curr[1]].f <= nodes[acc[0]][acc[1]].f ? curr : acc,
+    open[0]
+  );
+
+  console.log("currentPos", currentPos);
+
+  const currentNode = nodes[currentPos[0]][currentPos[1]];
 
   // remove current from open
+  console.log("currentPos before removing", currentPos);
   open = open.filter(
     (p) => !(p[0] === currentPos[0] && p[1] === currentPos[1])
   );
-  //console.log("open", open);
+  console.log("open after removing current", open);
 
   // add current to closed
   closed[currentPos[0]][currentPos[1]] = 1;
 
   // if current is the target node, path has been found
-  if (currentPos[0] === TARGET_POS[0] && currentPos[1] === TARGET_POS) return;
+  console.log("currentPos", currentPos, "TARGET_POS", TARGET_POS);
+  if (currentPos[0] === TARGET_POS[0] && currentPos[1] === TARGET_POS[1]) break;
 
   // Find out all neighbours that are traversable
   // and NOT closed.
-  // TODO: Neighbours with >1 height difference will be considered obstacles.
 
   let neighbours = [];
   // up
-  if (currentPos[0] - 1 >= 0 && closed[currentPos[0]][currentPos[1]] === 0)
+  if (
+    currentPos[0] - 1 >= 0 &&
+    closed[currentPos[0] - 1][currentPos[1]] === 0 &&
+    data[currentPos[0]][currentPos[1]] <=
+      data[currentPos[0] - 1][currentPos[1]] + 1
+  )
     neighbours.push(currentPos);
   // right
   if (
     currentPos[1] + 1 < WIDTH &&
-    closed[currentPos[0]][currentPos[1] + 1] === 0
+    closed[currentPos[0]][currentPos[1] + 1] === 0 &&
+    data[currentPos[0]][currentPos[1]] <=
+      data[currentPos[0]][currentPos[1] + 1] + 1
   )
     neighbours.push([currentPos[0], currentPos[1] + 1]);
   // down
   if (
     currentPos[0] + 1 < HEIGHT &&
-    closed[currentPos[0] + 1][currentPos[1]] === 0
+    closed[currentPos[0] + 1][currentPos[1]] === 0 &&
+    data[currentPos[0]][currentPos[1]] <=
+      data[currentPos[0] + 1][currentPos[1]] + 1
   )
     neighbours.push([currentPos[0] + 1, currentPos[1]]);
   // left
-  if (currentPos[1] - 1 >= 0 && closed[currentPos[0]][currentPos[1] - 1] === 0)
-    neighbours.push(currentPos);
+  if (
+    currentPos[1] - 1 >= 0 &&
+    closed[currentPos[0]][currentPos[1] - 1] === 0 &&
+    data[currentPos[0]][currentPos[1]] <=
+      data[currentPos[0] - 1][currentPos[1]] + 1
+  )
+    neighbours.push([currentPos[0], currentPos[1] - 1]);
 
-  console.log("neighbours", neighbours);
+  //console.log("neighbours", neighbours);
 
   neighbours.forEach((neighbourPos) => {
     const neighbourNode = nodes[neighbourPos[0]][neighbourPos[1]];
@@ -161,9 +167,10 @@ while (i < 1) {
     const h = manhattanDist(neighbourPos, TARGET_POS);
     // if new path to neighbour is shorter OR neighbour is not in open
     const neighbourInOpen =
-      open.filter((p) => p[0] === neighbourPos[0] && p[1] === neighbourPos[1])
-        .length > 0;
-    console.log("neighbourInOpen", neighbourPos, neighbourInOpen);
+      open.filter(
+        (pos) => pos[0] === neighbourPos[0] && pos[1] === neighbourPos[1]
+      ).length > 0;
+    //console.log("neighbourInOpen", neighbourPos, neighbourInOpen);
     if (!neighbourInOpen || g + h < neighbourNode.h) {
       // set f cost to neighbour
       neighbourNode.update_g(g);
@@ -177,8 +184,21 @@ while (i < 1) {
     }
   });
 
-  console.log("closed", closed);
-  console.log("neighbours", neighbours);
-  console.log("open", open);
+  //console.log("closed", closed);
+  // console.log("data", data);
+  // console.log("neighbours", neighbours);
+  // console.log("open", open);
   i++;
 }
+
+console.log(i, "steps");
+
+const flatten = (node) => {
+  if (node.parent === undefined) return [];
+  return [node.parent.row, node.parent.col].concat(flatten(node.parent));
+};
+
+const flattened = flatten(nodes[TARGET_POS[0]][TARGET_POS[1]]);
+console.log(flattened);
+//console.log(nodes[START_POS[0]][START_POS[1]].parent);
+//console.log(nodes[TARGET_POS[0]][TARGET_POS[1]].parent);
