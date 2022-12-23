@@ -6,8 +6,11 @@ class Node {
     this.h = h;
     this.f = g + h;
     this.parent = parent;
-    this.open = false;
-    this.closed = false;
+  }
+
+  update_h(h) {
+    this.h = h;
+    this.f = h + this.g;
   }
 
   update_g(g) {
@@ -52,7 +55,6 @@ const generateNodes = (width, height, startPos) => {
     }
     nodes.push(row);
   }
-  nodes[startPos[0]][startPos[1]].open = true;
   return nodes;
 };
 
@@ -85,5 +87,28 @@ let pos = START_POS;
 //console.log(m);
 
 let nodes = generateNodes(WIDTH, HEIGHT, START_POS);
+let open = [];
+let closed = [];
+nodes[START_POS[0]][START_POS[1]].update_h(100);
+nodes[START_POS[0]][START_POS[1]].update_g(0);
+open.push(START_POS);
+console.log(nodes[START_POS[0]][START_POS[1]]);
 
-console.log(nodes);
+nodes[1][0].update_h(50);
+open.push([1, 0]);
+console.log(nodes[1][0], open);
+
+let i = 0;
+while (i < 1) {
+  console.log("open", open);
+  let current = [0, 0];
+  // find node in open list with the lowest f_cost
+  open.forEach((pos) => {
+    if (nodes[pos[0]][pos[1]].f <= nodes[current[0]][current[1]].f)
+      current = pos;
+  });
+  console.log("current", current);
+  open = open.filter((p) => !(p[0] === current[0] && p[1] === current[1]));
+  console.log("open", open);
+  i++;
+}
