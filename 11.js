@@ -117,7 +117,7 @@ const monkeyStartsAt = Array.from(
 
 let monkeys = monkeyStartsAt.map((l) => parseMonkey(lines.slice(l, l + 6)));
 
-for (let i = 0; i < 20; i++) round(monkeys, true);
+for (let i = 0; i < 1; i++) round(monkeys, true);
 
 //console.log(
 //  "? ",
@@ -131,7 +131,7 @@ for (let i = 0; i < 20; i++) round(monkeys, true);
 monkeys = monkeyStartsAt.map((l) => parseMonkey(lines.slice(l, l + 6)));
 console.log(monkeys.length);
 
-for (let i = 0; i < 20; i++) {
+for (let i = 0; i < 1; i++) {
   monkeys = round(monkeys, false);
 
   //console.log(
@@ -152,7 +152,7 @@ console.log(
 console.log(
   monkeys
     .map((m) => m.inspections)
-    .sort(sortDec)
+    //.sort(sortDec)
     .slice(0, 2)
     .reduce((acc, curr) => acc * curr, 1)
 );
