@@ -52,11 +52,13 @@ const generateNodes = (width, height, startPos) => {
   for (let iy = 0; iy < HEIGHT; iy++) {
     let row = [];
     for (let ix = 0; ix < WIDTH; ix++) {
-      const node = new Node(-1, -1);
+      const node = new Node(Number.MAX_SAFE_INTEGER, Number.MAX_SAFE_INTEGER);
       row.push(node);
     }
     nodes.push(row);
   }
+  nodes[startPos[0]][startPos[1]].update_h(0);
+  nodes[startPos[0]][startPos[1]].update_g(0);
   return nodes;
 };
 
@@ -91,13 +93,13 @@ let pos = START_POS;
 let nodes = generateNodes(WIDTH, HEIGHT, START_POS);
 let open = [];
 let closed = generateEmptyArray(WIDTH, HEIGHT, 0);
-console.log(closed);
-nodes[START_POS[0]][START_POS[1]].update_h(100);
-nodes[START_POS[0]][START_POS[1]].update_g(0);
-open.push(START_POS);
-console.log(nodes[START_POS[0]][START_POS[1]]);
+// console.log(closed);
+//nodes[START_POS[0]][START_POS[1]].update_h(100);
+//nodes[START_POS[0]][START_POS[1]].update_g(0);
+//open.push(START_POS);
+//console.log(nodes[START_POS[0]][START_POS[1]]);
 
-nodes[1][0].update_h(50);
+//nodes[1][0].update_h(50);
 //open.push([1, 0]);
 //open.push([2, 0]);
 //console.log(nodes[1][0]);
@@ -105,41 +107,78 @@ nodes[1][0].update_h(50);
 //console.log(open);
 
 let i = 0;
+let currentPos = [0, 0];
 while (i < 1) {
-  console.log("open", open);
-  let current = [0, 0];
+  //console.log("open", open);
+  const currentNode = nodes[currentPos[0]][currentPos[1]];
   // find node in open list with the lowest f_cost
   open.forEach((pos) => {
-    if (nodes[pos[0]][pos[1]].f <= nodes[current[0]][current[1]].f)
-      current = pos;
+    if (nodes[pos[0]][pos[1]].f <= currentNode.f) currentPos = pos;
   });
-  console.log("current", current);
+  //console.log("current", currentPos);
 
   // remove current from open
-  open = open.filter((p) => !(p[0] === current[0] && p[1] === current[1]));
-  console.log("open", open);
+  open = open.filter(
+    (p) => !(p[0] === currentPos[0] && p[1] === currentPos[1])
+  );
+  //console.log("open", open);
 
   // add current to closed
-  closed[current[0]][current[1]] = 1;
+  closed[currentPos[0]][currentPos[1]] = 1;
 
   // if current is the target node, path has been found
-  if (current[0] === TARGET_POS[0] && current[1] === TARGET_POS) return;
+  if (currentPos[0] === TARGET_POS[0] && currentPos[1] === TARGET_POS) return;
+
+  // Find out all neighbours that are traversable
+  // and NOT closed.
+  // TODO: Neighbours with >1 height difference will be considered obstacles.
 
   let neighbours = [];
   // up
-  if (current[0] - 1 >= 0 && closed[current[0]][current[1]] === 0)
-    neighbours.push(current);
+  if (currentPos[0] - 1 >= 0 && closed[currentPos[0]][currentPos[1]] === 0)
+    neighbours.push(currentPos);
   // right
-  if (current[1] + 1 < WIDTH && closed[current[0]][current[1] + 1] === 0)
-    neighbours.push([current[0], current[1] + 1]);
+  if (
+    currentPos[1] + 1 < WIDTH &&
+    closed[currentPos[0]][currentPos[1] + 1] === 0
+  )
+    neighbours.push([currentPos[0], currentPos[1] + 1]);
   // down
-  if (current[0] + 1 < HEIGHT && closed[current[0] + 1][current[1]] === 0)
-    neighbours.push([current[0] + 1, current[1]]);
+  if (
+    currentPos[0] + 1 < HEIGHT &&
+    closed[currentPos[0] + 1][currentPos[1]] === 0
+  )
+    neighbours.push([currentPos[0] + 1, currentPos[1]]);
   // left
-  if (current[1] - 1 >= 0 && closed[current[0]][current[1] - 1] === 0)
-    neighbours.push(current);
+  if (currentPos[1] - 1 >= 0 && closed[currentPos[0]][currentPos[1] - 1] === 0)
+    neighbours.push(currentPos);
+
+  console.log("neighbours", neighbours);
+
+  neighbours.forEach((neighbourPos) => {
+    const neighbourNode = nodes[neighbourPos[0]][neighbourPos[1]];
+    const g = currentNode.g + 1;
+    const h = manhattanDist(neighbourPos, TARGET_POS);
+    // if new path to neighbour is shorter OR neighbour is not in open
+    const neighbourInOpen =
+      open.filter((p) => p[0] === neighbourPos[0] && p[1] === neighbourPos[1])
+        .length > 0;
+    console.log("neighbourInOpen", neighbourPos, neighbourInOpen);
+    if (!neighbourInOpen || g + h < neighbourNode.h) {
+      // set f cost to neighbour
+      neighbourNode.update_g(g);
+      neighbourNode.update_h(h);
+
+      // set parent of neighbour to current
+      neighbourNode.parent = currentNode;
+
+      // if neighbour is not in open, add neighbour to open
+      if (!neighbourInOpen) open.push(neighbourPos);
+    }
+  });
 
   console.log("closed", closed);
   console.log("neighbours", neighbours);
+  console.log("open", open);
   i++;
 }
