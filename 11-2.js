@@ -3,7 +3,7 @@ const f = require("fs");
 let lines = [];
 
 // read the data
-const dataRaw = f.readFileSync("data/11-data-mini.txt", "utf-8");
+const dataRaw = f.readFileSync("data/11-data.txt", "utf-8");
 dataRaw.split(/\r?\n/).forEach((line) => {
   lines.push(line);
 });
@@ -33,26 +33,25 @@ const parseMonkey = (lines) => {
   };
 };
 
+const leastCommonMultiple = (numbers) => {
+  // convert big ints to numbers
+  numbers = numbers.map((n) => parseInt(n));
+  let max = Math.max(...numbers);
+  let lcm = max;
+  while (true) {
+    if (numbers.every((n) => lcm % n === 0)) {
+      return lcm;
+    }
+    lcm += max;
+  }
+};
+
 const monkeyStartsAt = Array.from(
   { length: lines.length / MONKEY_LINES + 1 },
   (_, i) => i * MONKEY_LINES
 );
 
 const round = (monkeys, divide = true) => {
-  let newMonkeys = [...monkeys];
-  for (let i = 0; i < monkeys.length; i++) {
-    let monkey = newMonkeys[i];
-    const { itemsAndOwners, inspections } = turn(monkey, divide);
-    monkey.items = [];
-    itemsAndOwners.forEach(({ worryLevel, newOwner }) => {
-      newMonkeys[newOwner].items.push(worryLevel);
-    });
-    monkey.inspections += inspections;
-  }
-  return newMonkeys;
-};
-
-const round2 = (monkeys, divide = true) => {
   for (let i = 0; i < monkeys.length; i++) {
     let monkey = monkeys[i];
     const { worryLevelsAndOwners, howManyInspections } = turn(monkey, divide);
@@ -82,25 +81,19 @@ const turn = (monkey, divide = true) => {
   return { worryLevelsAndOwners, howManyInspections };
 };
 
-// let cachedModulos = ;
-
-// make cachedModulos empty 2d object
-let cachedModulos = {};
-
 const handleItem = (item, operation, test, throwTo, divide = true) => {
   const worryLevel = calculateNewWorryLevel(
     item,
     operation.operand,
     operation.operator
   );
-  const newWorryLevel = divide ? worryLevel / 3n : worryLevel; // % test;
+  const newWorryLevel = divide ? worryLevel / 3n : worryLevel;
 
   const moduloResult = newWorryLevel % test === 0n;
   const throwToIndex = moduloResult ? 0 : 1;
   const newOwner = throwTo[throwToIndex];
   if (moduloResult) {
-    const chopped = test * test; // TODO: This is wrong.
-    return { newWorryLevel: chopped, newOwner };
+    return { newWorryLevel: newWorryLevel % LCM, newOwner };
   } else return { newWorryLevel, newOwner };
 };
 
@@ -110,25 +103,21 @@ const calculateNewWorryLevel = (x, y, op) => {
   }
 
   if (op === "*") {
-    return BigInt(x) * BigInt(y);
+    return x * y;
   }
   if (op === "+") {
-    return BigInt(x) + BigInt(y);
+    return x + y;
   }
 };
 
+// part 1
 let monkeys = monkeyStartsAt.map((l) => parseMonkey(lines.slice(l, l + 6)));
 
-for (let i = 0; i < 20; i++) {
-  round2(monkeys, true);
-  console.log("After round ", i + 1);
-  monkeys.map((m, i) => console.log("Monkey " + i + ":" + m.items));
-}
+const LCM = BigInt(leastCommonMultiple(monkeys.map((m) => m.test)));
 
-console.log(
-  "inspections",
-  monkeys.map((m) => m.inspections)
-);
+for (let i = 0; i < 20; i++) {
+  round(monkeys, true);
+}
 
 console.log(
   monkeys
@@ -138,20 +127,20 @@ console.log(
     .reduce((acc, curr) => acc * curr, 1)
 );
 
+// part 2
 monkeys = monkeyStartsAt.map((l) => parseMonkey(lines.slice(l, l + 6)));
 
-const ROUNDS = 1000;
-
+const ROUNDS = 10000;
 for (let i = 0; i < ROUNDS; i++) {
-  let s = "Round " + i + " execution";
-  //console.time(s);
-  round2(monkeys, false);
-  //console.timeEnd(s);
+  round(monkeys, false);
 }
 
-console.log("After round ", ROUNDS);
-monkeys.map((m, i) =>
-  console.log("Monkey " + i + " inspected " + m.inspections + " items")
+console.log(
+  monkeys
+    .map((m) => m.inspections)
+    .sort(sortDec)
+    .slice(0, 2)
+    .reduce((acc, curr) => acc * curr, 1)
 );
 
 module.exports = { calculateNewWorryLevel };
