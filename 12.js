@@ -22,7 +22,7 @@ class Node {
 let data = [];
 
 // read the data
-const dataRaw = f.readFileSync("12-data-mini.txt", "utf-8");
+const dataRaw = f.readFileSync("data/12-data.txt", "utf-8");
 dataRaw.split(/\r?\n/).forEach((line) => {
   data.push(line.split("").map((c) => c.charCodeAt(0) - 97));
 });
@@ -92,72 +92,52 @@ open.push(START_POS);
 let i = 0;
 let currentPos = [0, 0];
 while (true) {
-  console.log("open", open);
-  //const currentNode = nodes[currentPos[0]][currentPos[1]];
   // find node in open list with the lowest f_cost
-  // open.forEach((pos) => {
-  //   if (nodes[pos[0]][pos[1]].f <= currentNode.f) currentPos = pos;
-  // });
   const currentPos = open.reduce(
     (acc, curr) =>
       nodes[curr[0]][curr[1]].f <= nodes[acc[0]][acc[1]].f ? curr : acc,
     open[0]
   );
 
-  console.log("currentPos", currentPos);
-
+  //console.log("currentPos", currentPos);
   const currentNode = nodes[currentPos[0]][currentPos[1]];
 
   // remove current from open
-  console.log("currentPos before removing", currentPos);
   open = open.filter(
     (p) => !(p[0] === currentPos[0] && p[1] === currentPos[1])
   );
-  console.log("open after removing current", open);
 
   // add current to closed
   closed[currentPos[0]][currentPos[1]] = 1;
 
   // if current is the target node, path has been found
-  console.log("currentPos", currentPos, "TARGET_POS", TARGET_POS);
+  // console.log("currentPos", currentPos, "TARGET_POS", TARGET_POS);
   if (currentPos[0] === TARGET_POS[0] && currentPos[1] === TARGET_POS[1]) break;
 
   // Find out all neighbours that are traversable
   // and NOT closed.
 
   let neighbours = [];
-  // up
-  if (
-    currentPos[0] - 1 >= 0 &&
-    closed[currentPos[0] - 1][currentPos[1]] === 0 &&
-    data[currentPos[0]][currentPos[1]] <=
-      data[currentPos[0] - 1][currentPos[1]] + 1
-  )
-    neighbours.push(currentPos);
-  // right
-  if (
-    currentPos[1] + 1 < WIDTH &&
-    closed[currentPos[0]][currentPos[1] + 1] === 0 &&
-    data[currentPos[0]][currentPos[1]] <=
-      data[currentPos[0]][currentPos[1] + 1] + 1
-  )
-    neighbours.push([currentPos[0], currentPos[1] + 1]);
-  // down
-  if (
-    currentPos[0] + 1 < HEIGHT &&
-    closed[currentPos[0] + 1][currentPos[1]] === 0 &&
-    data[currentPos[0]][currentPos[1]] <=
-      data[currentPos[0] + 1][currentPos[1]] + 1
-  )
-    neighbours.push([currentPos[0] + 1, currentPos[1]]);
-  // left
-  if (
-    currentPos[1] - 1 >= 0 &&
-    closed[currentPos[0]][currentPos[1] - 1] === 0 &&
-    data[currentPos[0]][currentPos[1]] <=
-      data[currentPos[0] - 1][currentPos[1]] + 1
-  )
-    neighbours.push([currentPos[0], currentPos[1] - 1]);
+  const directions = [
+    [-1, 0], // down
+    [0, 1], // right
+    [1, 0], // up
+    [0, -1], // left
+  ];
+
+  directions.forEach(([dy, dx]) => {
+    const [newY, newX] = [currentPos[0] + dy, currentPos[1] + dx];
+    if (
+      newY >= 0 &&
+      newY < HEIGHT &&
+      newX >= 0 &&
+      newX < WIDTH &&
+      closed[newY][newX] === 0 &&
+      data[currentPos[0]][currentPos[1]] + 1 >= data[newY][newX]
+    ) {
+      neighbours.push([newY, newX]);
+    }
+  });
 
   //console.log("neighbours", neighbours);
 
@@ -184,21 +164,36 @@ while (true) {
     }
   });
 
-  //console.log("closed", closed);
-  // console.log("data", data);
-  // console.log("neighbours", neighbours);
-  // console.log("open", open);
   i++;
 }
 
-console.log(i, "steps");
+console.log(i - 2, "steps");
 
 const flatten = (node) => {
   if (node.parent === undefined) return [];
-  return [node.parent.row, node.parent.col].concat(flatten(node.parent));
+  return [
+    flatten(node.parent),
+    "[" + node.parent.row + "," + node.parent.col + "]",
+  ].flat();
 };
 
 const flattened = flatten(nodes[TARGET_POS[0]][TARGET_POS[1]]);
 console.log(flattened);
-//console.log(nodes[START_POS[0]][START_POS[1]].parent);
-//console.log(nodes[TARGET_POS[0]][TARGET_POS[1]].parent);
+
+console.log(dataRaw);
+
+// Highlight the path and mark the steps
+// so that each step points to the next step
+
+let dataArr = dataRaw.split(/\r?\n/);
+flattened.forEach((step) => {
+  const [row, col] = step
+    .replace("[", "")
+    .replace("]", "")
+    .split(",")
+    .map((s) => parseInt(s));
+  dataArr[row] =
+    dataArr[row].substring(0, col) + "X" + dataArr[row].substring(col + 1);
+});
+
+console.log(dataArr.join("\n"));
