@@ -1,8 +1,8 @@
 const f = require("fs");
 
 class Node {
-  constructor(row, col, g, h, parent) {
-    (this.row = row), (this.col = col), (this.g = g);
+  constructor(row, col, data, g, h, parent) {
+    (this.row = row), (this.col = col), (this.data = data), (this.g = g);
     this.h = h;
     this.f = g + h;
     this.parent = parent;
@@ -22,10 +22,12 @@ class Node {
 let data = [];
 
 // read the data
-const dataRaw = f.readFileSync("data/12-data.txt", "utf-8");
+const dataRaw = f.readFileSync("data/12-data-mini.txt", "utf-8");
 dataRaw.split(/\r?\n/).forEach((line) => {
   data.push(line.split("").map((c) => c.charCodeAt(0) - 97));
 });
+
+console.log("data", data);
 
 const WIDTH = data[0].length;
 const HEIGHT = data.length;
@@ -54,6 +56,7 @@ const generateNodes = (width, height, startPos) => {
       const node = new Node(
         iy,
         ix,
+        data[iy][ix],
         Number.MAX_SAFE_INTEGER,
         Number.MAX_SAFE_INTEGER
       );
@@ -66,31 +69,18 @@ const generateNodes = (width, height, startPos) => {
   return nodes;
 };
 
-// console.log(visited.length, visited[0].length);
-
 const manhattanDist = (pos, target) => {
   const dy = Math.abs(pos[0] - target[0]);
   const dx = Math.abs(pos[1] - target[1]);
   return dy + dx;
 };
 
-let visited = generateNodes(WIDTH, HEIGHT, START_POS);
-let pos = START_POS;
-
-//const n = new Node(10, 20);
-//console.log(n);
-//n.update_g(20);
-//console.log(n);
-//
-//const m = new Node(20, 20, n);
-//console.log(m);
-
 let nodes = generateNodes(WIDTH, HEIGHT, START_POS);
 let open = [];
 let closed = generateEmptyArray(WIDTH, HEIGHT, 0);
 open.push(START_POS);
+
 let i = 0;
-let currentPos = [0, 0];
 while (true) {
   // find node in open list with the lowest f_cost
   const currentPos = open.reduce(
@@ -99,7 +89,18 @@ while (true) {
     open[0]
   );
 
-  //console.log("currentPos", currentPos);
+  const currNode = nodes[currentPos[0]][currentPos[1]];
+
+  // if current is the target node, path has been found
+  if (
+    (currNode.row =
+      TARGET_POS[0] &&
+      currNode.col === TARGET_POS[1] &&
+      currNode.parent.data === 25)
+  )
+    break;
+
+  console.log("currentPos", currentPos);
   const currentNode = nodes[currentPos[0]][currentPos[1]];
 
   // remove current from open
@@ -110,13 +111,8 @@ while (true) {
   // add current to closed
   closed[currentPos[0]][currentPos[1]] = 1;
 
-  // if current is the target node, path has been found
-  // console.log("currentPos", currentPos, "TARGET_POS", TARGET_POS);
-  if (currentPos[0] === TARGET_POS[0] && currentPos[1] === TARGET_POS[1]) break;
-
   // Find out all neighbours that are traversable
   // and NOT closed.
-
   let neighbours = [];
   const directions = [
     [-1, 0], // down
@@ -139,8 +135,6 @@ while (true) {
     }
   });
 
-  //console.log("neighbours", neighbours);
-
   neighbours.forEach((neighbourPos) => {
     const neighbourNode = nodes[neighbourPos[0]][neighbourPos[1]];
     const g = currentNode.g + 1;
@@ -150,7 +144,6 @@ while (true) {
       open.filter(
         (pos) => pos[0] === neighbourPos[0] && pos[1] === neighbourPos[1]
       ).length > 0;
-    //console.log("neighbourInOpen", neighbourPos, neighbourInOpen);
     if (!neighbourInOpen || g + h < neighbourNode.h) {
       // set f cost to neighbour
       neighbourNode.update_g(g);
@@ -167,7 +160,7 @@ while (true) {
   i++;
 }
 
-console.log(i - 2, "steps");
+console.log("Path was found after", i - 2, "steps");
 
 const flatten = (node) => {
   if (node.parent === undefined) return [];
@@ -178,22 +171,4 @@ const flatten = (node) => {
 };
 
 const flattened = flatten(nodes[TARGET_POS[0]][TARGET_POS[1]]);
-console.log(flattened);
-
-console.log(dataRaw);
-
-// Highlight the path and mark the steps
-// so that each step points to the next step
-
-let dataArr = dataRaw.split(/\r?\n/);
-flattened.forEach((step) => {
-  const [row, col] = step
-    .replace("[", "")
-    .replace("]", "")
-    .split(",")
-    .map((s) => parseInt(s));
-  dataArr[row] =
-    dataArr[row].substring(0, col) + "X" + dataArr[row].substring(col + 1);
-});
-
-console.log(dataArr.join("\n"));
+console.log("Coords from start to finish", flattened);
