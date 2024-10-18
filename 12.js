@@ -22,7 +22,7 @@ class Node {
 let data = [];
 
 // read the data
-const dataRaw = f.readFileSync("data/12-data-small.txt", "utf-8");
+const dataRaw = f.readFileSync("data/12-data.txt", "utf-8");
 dataRaw.split(/\r?\n/).forEach((line) => {
   data.push(line.split("").map((c) => c.charCodeAt(0) - 97));
 });
@@ -37,10 +37,8 @@ const TARGET_IDX = DATA_PLAIN.indexOf("E");
 const MAX_VALUE = Math.max(...data.map((row) => Math.max(...row)));
 
 const START_POS = [START_IDX / WIDTH, START_IDX % WIDTH];
-data[START_POS[0]][START_POS[1]] = 0;
+data[START_POS[0]][START_POS[1]] = -1;
 const TARGET_POS = [Math.floor(TARGET_IDX / WIDTH), TARGET_IDX % WIDTH];
-
-// console.log(START_POS, TARGET_POS);
 
 const generateEmptyArray = (width, height, content = 0) => {
   let array = Array(height)
@@ -177,3 +175,6 @@ const flatten = (node) => {
 
 const flattened = flatten(nodes[TARGET_POS[0]][TARGET_POS[1]]);
 console.log("Coords from start to finish", flattened);
+
+// write flattened to file
+f.writeFileSync("data/12-output.txt", flattened.join("\n"));
