@@ -22,18 +22,20 @@ class Node {
 let data = [];
 
 // read the data
-const dataRaw = f.readFileSync("data/12-data-mini.txt", "utf-8");
+const dataRaw = f.readFileSync("data/12-data-small.txt", "utf-8");
 dataRaw.split(/\r?\n/).forEach((line) => {
   data.push(line.split("").map((c) => c.charCodeAt(0) - 97));
 });
-
-console.log("data", data);
 
 const WIDTH = data[0].length;
 const HEIGHT = data.length;
 const DATA_PLAIN = dataRaw.split(/\r?\n/).join("");
 const START_IDX = DATA_PLAIN.indexOf("S");
 const TARGET_IDX = DATA_PLAIN.indexOf("E");
+
+// Get the highest value (char -> int) in the data
+const MAX_VALUE = Math.max(...data.map((row) => Math.max(...row)));
+
 const START_POS = [START_IDX / WIDTH, START_IDX % WIDTH];
 data[START_POS[0]][START_POS[1]] = 0;
 const TARGET_POS = [Math.floor(TARGET_IDX / WIDTH), TARGET_IDX % WIDTH];
@@ -50,9 +52,9 @@ const generateEmptyArray = (width, height, content = 0) => {
 
 const generateNodes = (width, height, startPos) => {
   let nodes = [];
-  for (let iy = 0; iy < HEIGHT; iy++) {
+  for (let iy = 0; iy < height; iy++) {
     let row = [];
-    for (let ix = 0; ix < WIDTH; ix++) {
+    for (let ix = 0; ix < width; ix++) {
       const node = new Node(
         iy,
         ix,
@@ -93,14 +95,13 @@ while (true) {
 
   // if current is the target node, path has been found
   if (
-    (currNode.row =
-      TARGET_POS[0] &&
-      currNode.col === TARGET_POS[1] &&
-      currNode.parent.data === 25)
+    currNode.row === TARGET_POS[0] &&
+    currNode.col === TARGET_POS[1] &&
+    currNode.parent.data === MAX_VALUE
   )
     break;
 
-  console.log("currentPos", currentPos);
+  // console.log("currentPos", currentPos);
   const currentNode = nodes[currentPos[0]][currentPos[1]];
 
   // remove current from open
@@ -131,6 +132,12 @@ while (true) {
       closed[newY][newX] === 0 &&
       data[currentPos[0]][currentPos[1]] + 1 >= data[newY][newX]
     ) {
+      // if new position is the target position but
+      // the value is not the highest, then skip
+      if (newY === TARGET_POS[0] && newX === TARGET_POS[1]) {
+        if (data[currentPos[0]][currentPos[1]] !== MAX_VALUE) return;
+      }
+
       neighbours.push([newY, newX]);
     }
   });
@@ -159,8 +166,6 @@ while (true) {
 
   i++;
 }
-
-console.log("Path was found after", i - 2, "steps");
 
 const flatten = (node) => {
   if (node.parent === undefined) return [];
