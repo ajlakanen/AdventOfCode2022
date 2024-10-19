@@ -95,7 +95,7 @@ while (true) {
   if (
     currNode.row === TARGET_POS[0] &&
     currNode.col === TARGET_POS[1] &&
-    currNode.parent.data === MAX_VALUE
+    currNode.parent.data >= MAX_VALUE -1
   )
     break;
 
@@ -133,7 +133,7 @@ while (true) {
       // if new position is the target position but
       // the value is not the highest, then skip
       if (newY === TARGET_POS[0] && newX === TARGET_POS[1]) {
-        if (data[currentPos[0]][currentPos[1]] !== MAX_VALUE) return;
+        if (data[currentPos[0]][currentPos[1]] < MAX_VALUE -1 ) return;
       }
 
       neighbours.push([newY, newX]);
@@ -176,5 +176,8 @@ const flatten = (node) => {
 const flattened = flatten(nodes[TARGET_POS[0]][TARGET_POS[1]]);
 console.log("Coords from start to finish", flattened);
 
+console.log("Path length is " + flattened.length + ".");
+
 // write flattened to file
 f.writeFileSync("data/12-output.txt", flattened.join("\n"));
+
