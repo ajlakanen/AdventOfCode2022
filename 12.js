@@ -1,5 +1,8 @@
 const f = require("fs");
 
+/**
+ * Node
+ */
 class Node {
   constructor(row, col, data, g, h, parent) {
     (this.row = row), (this.col = col), (this.data = data), (this.g = g);
@@ -99,18 +102,15 @@ const aStar = (startPos, targetPos) => {
       return null;
     }
 
-    const currNode = nodes[currentPos[0]][currentPos[1]];
+    const currentNode = nodes[currentPos[0]][currentPos[1]];
 
     // if current is the target node, path has been found
     if (
-      currNode.row === targetPos[0] &&
-      currNode.col === targetPos[1] &&
-      currNode.parent.data >= MAX_VALUE - 1
+      currentNode.row === targetPos[0] &&
+      currentNode.col === targetPos[1] &&
+      currentNode.parent.data >= MAX_VALUE - 1
     )
       break;
-
-    // console.log("currentPos", currentPos);
-    const currentNode = nodes[currentPos[0]][currentPos[1]];
 
     // remove current from open
     open = open.filter(
@@ -186,9 +186,6 @@ const part1 = () => {
 
   const flattened = flatten(nodes[TARGET_POS[0]][TARGET_POS[1]]);
   console.log("Path length is " + flattened.length + ".");
-
-  // write flattened to file
-  // f.writeFileSync("data/12-output.txt", flattened.join("\n"));
 };
 
 const part2 = () => {
