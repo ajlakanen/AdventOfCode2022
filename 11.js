@@ -3,7 +3,7 @@ const f = require("fs");
 let lines = [];
 
 // read the data
-const dataRaw = f.readFileSync("11-data-mini.txt", "utf-8");
+const dataRaw = f.readFileSync("data/11-data.txt", "utf-8");
 dataRaw.split(/\r?\n/).forEach((line) => {
   lines.push(line);
 });
@@ -13,23 +13,6 @@ const sortDec = (a, b) => {
 };
 
 const MONKEY_LINES = 7;
-
-const newWorryLevel = (x, y, op) => {
-  if (y === "old") {
-    //console.log("before old assignment", y, x);
-    y = x;
-    //console.log("old assignment done", y, x);
-  }
-
-  if (op === "*") {
-    //console.log(x, "*", y, BigInt(x) * BigInt(y));
-    return BigInt(x) * BigInt(y);
-  }
-  if (op === "+") {
-    //console.log(x, "+", y, BigInt(x) + BigInt(y));
-    return BigInt(x) + BigInt(y);
-  }
-};
 
 const parseMonkey = (lines) => {
   const items = lines[1]
@@ -50,64 +33,17 @@ const parseMonkey = (lines) => {
   };
 };
 
-const round = (monkeys, divide = true) => {
-  let newMonkeys = [...monkeys];
-  //console.log("newMonkeys", newMonkeys);
-  for (let i = 0; i < monkeys.length; i++) {
-    let monkey = newMonkeys[i];
-    //console.log(monkey.items);
-    // console.log("monkey ", i);
-    const { itemsAndOwners, inspections } = turn(monkey, divide);
-    monkey.items = [];
-    //monkey = { ...monkey, items: [] };
-    itemsAndOwners.forEach(({ worryLevel, newOwner }) => {
-      newMonkeys[newOwner].items.push(worryLevel);
-    });
-    monkey.inspections += inspections;
-    //newMonkeys.push(monkey);
-    //console.log(
-    //  `monkey ${i} made ${inspections} inspections, now has `,
-    //  monkey.inspections
-    //);
+const leastCommonMultiple = (numbers) => {
+  // convert big ints to numbers
+  numbers = numbers.map((n) => parseInt(n));
+  let max = Math.max(...numbers);
+  let lcm = max;
+  while (true) {
+    if (numbers.every((n) => lcm % n === 0)) {
+      return lcm;
+    }
+    lcm += max;
   }
-  return newMonkeys;
-};
-
-const turn = (monkey, divide = true) => {
-  let itemsAndOwners = [];
-  let inspections = 0;
-  for (const item in monkey.items) {
-    inspections++;
-    //console.log(monkey.throwTo);
-    const { worryLevel, newOwner } = handleItem(
-      monkey.items[item],
-      monkey.operation,
-      monkey.test,
-      monkey.throwTo,
-      divide
-    );
-    itemsAndOwners.push({ worryLevel, newOwner });
-  }
-  return { itemsAndOwners: itemsAndOwners, inspections: inspections };
-};
-
-const handleItem = (item, operation, test, throwTo, divide = true) => {
-  const worryLevel = newWorryLevel(item, operation.operand, operation.operator);
-  //console.log(worryLevel);
-  //const newLevel = divide
-  //  ? BigInt(Math.floor(worryLevel / 3n))
-  //  : BigInt(worryLevel); // % test;
-  console.log(
-    "BigInt(worryLevel)",
-    BigInt(worryLevel),
-    "BigInt(test)",
-    BigInt(test),
-    "BigInt(worryLevel) % BigInt(test)",
-    BigInt(worryLevel) % BigInt(test)
-  );
-  const newOwner =
-    BigInt(worryLevel) % BigInt(test) === 0 ? throwTo[0] : throwTo[1];
-  return { worryLevel: worryLevel, newOwner: newOwner };
 };
 
 const monkeyStartsAt = Array.from(
@@ -115,44 +51,96 @@ const monkeyStartsAt = Array.from(
   (_, i) => i * MONKEY_LINES
 );
 
+const round = (monkeys, divide = true) => {
+  for (let i = 0; i < monkeys.length; i++) {
+    let monkey = monkeys[i];
+    const { worryLevelsAndOwners, howManyInspections } = turn(monkey, divide);
+    monkey.items = [];
+    worryLevelsAndOwners.forEach(({ newWorryLevel, newOwner }) => {
+      monkeys[newOwner].items.push(newWorryLevel);
+    });
+    monkey.inspections += howManyInspections;
+  }
+};
+
+const turn = (monkey, divide = true) => {
+  let worryLevelsAndOwners = [];
+  let howManyInspections = 0;
+  for (const item of monkey.items) {
+    howManyInspections++;
+    const { newWorryLevel, newOwner } = handleItem(
+      item,
+      monkey.operation,
+      monkey.test,
+      monkey.throwTo,
+      divide
+    );
+
+    worryLevelsAndOwners.push({ newWorryLevel, newOwner });
+  }
+  return { worryLevelsAndOwners, howManyInspections };
+};
+
+const handleItem = (item, operation, test, throwTo, divide = true) => {
+  const worryLevel = calculateNewWorryLevel(
+    item,
+    operation.operand,
+    operation.operator
+  );
+  const newWorryLevel = divide ? worryLevel / 3n : worryLevel;
+
+  const moduloResult = newWorryLevel % test === 0n;
+  const throwToIndex = moduloResult ? 0 : 1;
+  const newOwner = throwTo[throwToIndex];
+  if (moduloResult) {
+    return { newWorryLevel: newWorryLevel % LCM, newOwner };
+  } else return { newWorryLevel, newOwner };
+};
+
+const calculateNewWorryLevel = (x, y, op) => {
+  if (y === "old") {
+    y = x;
+  }
+
+  if (op === "*") {
+    return x * y;
+  }
+  if (op === "+") {
+    return x + y;
+  }
+};
+
+// part 1
 let monkeys = monkeyStartsAt.map((l) => parseMonkey(lines.slice(l, l + 6)));
 
-for (let i = 0; i < 1; i++) round(monkeys, true);
+const LCM = BigInt(leastCommonMultiple(monkeys.map((m) => m.test)));
 
-//console.log(
-//  "? ",
-//  monkeys
-//    .map((m) => m.inspections)
-//    .sort(sortDec)
-//    .slice(0, 2)
-//    .reduce((acc, curr) => acc * curr, 1)
-//);
-
-monkeys = monkeyStartsAt.map((l) => parseMonkey(lines.slice(l, l + 6)));
-console.log(monkeys.length);
-
-for (let i = 0; i < 1; i++) {
-  monkeys = round(monkeys, false);
-
-  //console.log(
-  //  i,
-  //  monkeys.map((m) => m.inspections),
-  //  monkeys.map((m) => m.items.length),
-  //  monkeys.reduce((acc, curr) => acc + curr.inspections, 0)
-  //);
+for (let i = 0; i < 20; i++) {
+  round(monkeys, true);
 }
-
-console.log(
-  "inspections",
-  monkeys.map((m) => m.inspections)
-); //.sort(sortDec));
-
-//console.log(monkeys);
 
 console.log(
   monkeys
     .map((m) => m.inspections)
-    //.sort(sortDec)
+    .sort(sortDec)
     .slice(0, 2)
     .reduce((acc, curr) => acc * curr, 1)
 );
+
+// part 2
+monkeys = monkeyStartsAt.map((l) => parseMonkey(lines.slice(l, l + 6)));
+
+const ROUNDS = 10000;
+for (let i = 0; i < ROUNDS; i++) {
+  round(monkeys, false);
+}
+
+console.log(
+  monkeys
+    .map((m) => m.inspections)
+    .sort(sortDec)
+    .slice(0, 2)
+    .reduce((acc, curr) => acc * curr, 1)
+);
+
+module.exports = { calculateNewWorryLevel };
